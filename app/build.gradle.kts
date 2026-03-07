@@ -93,10 +93,19 @@ android {
     }
 
     val gkdSigningConfig = signingConfigs.create("gkd") {
-        storeFile = file(project.properties["GKD_STORE_FILE"] as String)
-        storePassword = project.properties["GKD_STORE_PASSWORD"].toString()
-        keyAlias = project.properties["GKD_KEY_ALIAS"].toString()
-        keyPassword = project.properties["GKD_KEY_PASSWORD"].toString()
+        val storeFilePath = project.properties["GKD_STORE_FILE"]?.toString() ?: ""
+        if (storeFilePath.isNotEmpty()) {
+            storeFile = file(storeFilePath)
+            storePassword = project.properties["GKD_STORE_PASSWORD"]?.toString() ?: ""
+            keyAlias = project.properties["GKD_KEY_ALIAS"]?.toString() ?: ""
+            keyPassword = project.properties["GKD_KEY_PASSWORD"]?.toString() ?: ""
+        } else {
+            // 未配置签名文件时，复用默认debug签名配置
+            storeFile = signingConfigs.getByName("debug").storeFile
+            storePassword = signingConfigs.getByName("debug").storePassword
+            keyAlias = signingConfigs.getByName("debug").keyAlias
+            keyPassword = signingConfigs.getByName("debug").keyPassword
+        }
     }
 
     val playSigningConfig = if (project.hasProperty("PLAY_STORE_FILE")) {
